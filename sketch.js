@@ -29,7 +29,7 @@ function toggleTine() {
 }
 
 function preload() {
-    loadedImage = loadImage('pic.jpg');
+    loadedImage = loadImage('./images/pic.jpg');
     marbleShader = loadShader('shader.vert', 'shader.frag');
 }
 
