@@ -7,6 +7,8 @@ uniform vec2 resolution;
 uniform vec3 color;
 uniform vec3 ink;
 uniform sampler2D uTexture;
+uniform float isTine;
+uniform vec2 previousMouse;
 
 void main() {
     vec2 uv = gl_FragCoord.xy;
@@ -19,25 +21,21 @@ void main() {
     float magnitude = length(inkToPosition);
     vec4 selectedColor;
 
-    if (magnitude < ink.z) {
-        selectedColor = vec4(color, 1.0);
+    if (isTine > 0.5) { // tine | there is no bool
+        float proportion = exp(-magnitude * length(vec2(ink.z) / resolution) * 4.0);
+        vec2 coordinate = uv - proportion * (inkCenter - previousMouse);
+        coordinate /= resolution; // normalize
+        selectedColor = texture2D(uTexture, coordinate);
     }
-    else { // displacement
-        // float proportion = (ink.z * ink.z * ink.z * ink.z) / (magnitude * magnitude * magnitude); // cells
-        float proportion = ink.z / magnitude;
-        proportion *= proportion * proportion / 1.5;
-
-        if (proportion > 0.0001) { // affecting all pixels makes it blurry
-            // float movement = 1.0 + proportion; // black hole
-            float movement = 1.0 - proportion;
-            inkToPosition *= sqrt(movement);
-            inkToPosition += inkCenter;
-
-            inkToPosition /= resolution; // normalize
-            selectedColor = texture2D(uTexture, inkToPosition);
+    else {
+        if (magnitude < ink.z) { // drop ink
+            selectedColor = vec4(color, 1.0);
         }
-        else {
-            selectedColor = texture2D(uTexture, uv / resolution);
+        else { // displacement
+            float proportion = exp(-magnitude * length(vec2(ink.z) / resolution) * 4.0);
+            vec2 coordinate = uv - proportion * inkToPosition;
+            coordinate /= resolution; // normalize
+            selectedColor = texture2D(uTexture, coordinate);
         }
     }
 

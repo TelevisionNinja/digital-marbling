@@ -9,10 +9,24 @@ let loadedImage;
 
 let newDrop = true;
 let selectedColor;
+let isTine = false;
+let previousMouseX;
+let previousMouseY
 
 let marbleShader;
 
 let inkRadius;
+
+function toggleTine() {
+    isTine = !isTine;
+
+    if (isTine) {
+        document.getElementById('tineButton').value = 'Tine';
+    }
+    else {
+        document.getElementById('tineButton').value = 'Ink';
+    }
+}
 
 function preload() {
     loadedImage = loadImage('pic.jpg');
@@ -20,11 +34,13 @@ function preload() {
 }
 
 function setup() {
+    createCanvas(windowWidth, windowHeight - 24);
+
+    noSmooth();
     setAttributes('antialias', false);
-    createCanvas(windowWidth, windowHeight);
 
     // scale ink size based on screen size
-    inkRadius = Math.trunc(Math.sqrt(windowWidth * windowWidth + windowHeight * windowHeight) * 0.01 - 2.5);
+    inkRadius = Math.trunc(Math.sqrt(width * width + height * height) * 0.01 - 2.5); // pixels
 
     colorPalette = [
         [11, 106, 136],
@@ -49,19 +65,22 @@ function setup() {
 
     selectedColor = random(colorPalette);
 
-    bufferA = createGraphics(windowWidth, windowHeight, WEBGL);
+    bufferA = createGraphics(width, height, WEBGL);
     bufferA.background(255);
     bufferA.image(loadedImage, -width / 2, -height / 2, width, height, 0, 0, loadedImage.width, loadedImage.height, CONTAIN);
 
-    bufferB = createGraphics(windowWidth, windowHeight, WEBGL);
+    bufferB = createGraphics(width, height, WEBGL);
 
     currentBuffer = bufferA;
     currentBuffer.shader(marbleShader);
 
     image(currentBuffer, 0, 0);
+
+    previousMouseX = mouseX;
+    previousMouseY = mouseY;
 }
 
-function dropInk(centerX, centerY, inkRadius) {
+function runShader(centerX, centerY) {
     if (centerX < 0 || centerX > width || centerY < 0 || centerY > height) {
         return;
     }
@@ -78,6 +97,8 @@ function dropInk(centerX, centerY, inkRadius) {
     marbleShader = shaderCopy;
     otherBuffer.shader(marbleShader);
 
+    marbleShader.setUniform('isTine', isTine); // this boolean is converted into float
+    marbleShader.setUniform('previousMouse', [previousMouseX, previousMouseY]);
     marbleShader.setUniform('color', selectedColor);
     marbleShader.setUniform('resolution', [width, height]);
     marbleShader.setUniform('ink', [centerX, centerY, inkRadius]);
@@ -100,7 +121,10 @@ function draw() {
             newDrop = false;
         }
 
-        dropInk(mouseX, mouseY, inkRadius);
+        runShader(mouseX, mouseY);
         image(currentBuffer, 0, 0);
     }
+
+    previousMouseX = mouseX;
+    previousMouseY = mouseY;
 }
