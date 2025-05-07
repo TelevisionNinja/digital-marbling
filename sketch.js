@@ -28,12 +28,10 @@ function toggleTine() {
     }
 }
 
-function preload() {
-    loadedImage = loadImage('./images/pic.jpg');
-    marbleShader = loadShader('shader.vert', 'shader.frag');
-}
+async function setup() {
+    loadedImage = await loadImage('./images/pic.jpg');
+    marbleShader = await loadShader('shader.vert', 'shader.frag');
 
-function setup() {
     createCanvas(windowWidth, windowHeight - 24);
 
     noSmooth();
