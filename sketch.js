@@ -35,7 +35,7 @@ async function setup() {
     createCanvas(windowWidth, windowHeight - 24);
 
     noSmooth();
-    setAttributes('antialias', false);
+    // setAttributes('antialias', false);
 
     // scale ink size based on screen size
     inkRadius = Math.trunc(Math.sqrt(width * width + height * height) * 0.01 - 2.5); // pixels
